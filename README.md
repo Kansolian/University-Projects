@@ -2,17 +2,19 @@
 A Repository housing all code relating to various University projects. In addition to a thorugh explanation of other projects conducted throughout my 5 years in academia
 
 ## Bachelor years
+* `Autonomous Systems` - Code was lost given a faulty laptop, still mentioned given its impact on my knowledge base. The project resulted in building a laser Tag companion robot named ALTO, image can be seen in the folder. Build while using two arduino boards in conjunction.
+ * `Bachelor Thesis` - “A Deep Learning Approach On Fusion Technique Comparison Applied To Affordance Classification”.
+* `Cognitive Neuroscience` - Group based analyses of brainwaves. No code given assignment based nature, thus no open exploration of the task.
+* `Computational Linguistics` - Assignment testing semester acquired knowledge.
+
+ * `Foundation of Databases` - This project consists of the creation of a database. The topic chosen was Formula 1.
+ * `Knowledge Representation` - Project for inference logic, programmed in Prologue.
 
 * `Multi-Agent Systems` - Covid interaction study simulated in NetLogo.
-* `Autonomous Systems` - Code was lost given a faulty laptop, still mentioned given its impact on my knowledge base. The project resulted in building a laser Tag companion robot named ALTO, image can be seen in the folder. Build while using two arduino boards in conjunction.
 
-* `Cognitive Neuroscience` - Group based analyses of brainwaves. No code given assignment based nature, thus no open exploration of the task.
 * `Research Workshop` - Project paper: "A deeper deeper look into online reviews of mental disorders and their impact on Natural Language Processing".
 * `Software Engineering` - A bird detection app based on sound and images for android. The folder shows the parts I contributed. The app did not fully work in the end, given inexperienced group members in programming.
-* `Foundation of Databases` - This project consists of the creation of a database. The topic chosen was Formula 1.
-* `Computational Linguistics` - Assignment testing semester acquired knowledge.
-* `Knowledge Representation` - Project for inference logic, programmed in Prologue.
-* `Bachelor Thesis` - “A Deep Learning Approach On Fusion Technique Comparison Applied To Affordance Classification”.
+
 
 ## Master Years
 * `Cognitive Models of Language Learning` - Project Paper: "Unraveling a Linguistic Enigma: Computational Approach to Understanding Specific Language Impairment in Children”
@@ -20,6 +22,7 @@ A Repository housing all code relating to various University projects. In additi
 * `Core Topics Cognitive Science` - Project Paper: “Imitative behaviour of the Mirror Neuron System on Attention. The impact of the Genschow et al. (2017) paper on the taxonomy of Attention”.
 * `Core Topics AI` - Project Paper: “The Social Robot: Is the safe way, the right way?”.
 * `Ethics` - Essay Paper: “Asimov’s Three laws of robotic”.
+* `Research skills` - This folder houses the Image Analyses and spatio temporal assignments.
 * `Brain Computer Interfacing` -  Project Paper: "A Multimodal Analyses of a passive Brain Computer Interface for Workload Detection”.
 * `Complex Systems` - Project Paper: ”Forecasting Food Price Indices in the United States: Using Time-Series Forecasting Models Based On Complex System Paradigms”.
 * `Deep Reinforcement Learning` - Simple Walk simulation in python Gymnasium.
