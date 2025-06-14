@@ -4,7 +4,7 @@ A Repository housing all code relating to various University projects. In additi
 ## Bachelor years
 
 * `Multi-Agent Systems` - Covid interaction study simulated in NetLogo.
-* `Autonomous Systems` - Code was lost given a faulty laptop, still mentioned given its impact on my knowledge base. The project resulted in building a laser Tag companion robot named ALTO, Image can be seen in the folder. Build using Arduino, while using two arduino boards in conjunction.
+* `Autonomous Systems` - Code was lost given a faulty laptop, still mentioned given its impact on my knowledge base. The project resulted in building a laser Tag companion robot named ALTO, image can be seen in the folder. Build while using two arduino boards in conjunction.
 
 * `Cognitive Neuroscience` - Group based analyses of brainwaves. No code given assignment based nature, thus no open exploration of the task.
 * `Research Workshop` - Project paper: "A deeper deeper look into online reviews of mental disorders and their impact on Natural Language Processing"
