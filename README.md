@@ -17,26 +17,28 @@ A Repository housing all code relating to various University projects. In additi
 
 
 ## Master Years
-* `Cognitive Models of Language Learning` - Project Paper: "Unraveling a Linguistic Enigma: Computational Approach to Understanding Specific Language Impairment in Children”
-* `COmputer Games` - The project consisted of creating 3 game AI’s, “No Thanks” (card game), “Take5” (card game), “Neverwinter Nights” (Team based capture the flag).
-* `Core Topics Cognitive Science` - Project Paper: “Imitative behaviour of the Mirror Neuron System on Attention. The impact of the Genschow et al. (2017) paper on the taxonomy of Attention”.
-* `Core Topics AI` - Project Paper: “The Social Robot: Is the safe way, the right way?”.
-* `Ethics` - Essay Paper: “Asimov’s Three laws of robotic”.
-* `Research skills` - This folder houses the Image Analyses and spatio temporal assignments.
+ * `Bayesian Modelling of Cognitive Processes` - Project based on a Multinomial simulation approach on the effect of Cognitive Dissonance. Title: “The Effects of Self-Esteem on Drug Relapse”.
 * `Brain Computer Interfacing` -  Project Paper: "A Multimodal Analyses of a passive Brain Computer Interface for Workload Detection”.
+ 
+* `Cognitive Models of Language Learning` - Project Paper: "Unraveling a Linguistic Enigma: Computational Approach to Understanding Specific Language Impairment in Children”
 * `Complex Systems` - Project Paper: ”Forecasting Food Price Indices in the United States: Using Time-Series Forecasting Models Based On Complex System Paradigms”.
-* `Deep Reinforcement Learning` - Simple Walk simulation in python Gymnasium.
-* `Bayesian Modelling of Cognitive Processes` - Project based on a Multinomial simulation approach on the effect of Cognitive Dissonance. Title: “The Effects of Self-Esteem on Drug Relapse”.
+* `Computer Games` - The project consisted of creating 3 game AI’s, “No Thanks” (card game), “Take5” (card game), “Neverwinter Nights” (Team based capture the flag).
+  
+* `Core Topics AI` - Project Paper: “The Social Robot: Is the safe way, the right way?”.
+* `Core Topics Cognitive Science` - Project Paper: “Imitative behaviour of the Mirror Neuron System on Attention. The impact of the Genschow et al. (2017) paper on the taxonomy of Attention”.
 * `Deep Learning` - Project Paper: “FRAM: Facial Recognition Applied to Mouth Movement. A Feature Analysis On A Lip Reading Paradigm”.
-* `Internship` - Internship consisted of creating an opponent, field and Ball detection system for soccer-playing humanoid robots (NAO) (RoboCup).
-* `Master Thesis` - "THE POWER OF MULTI-AGENT SYSTEMS IN SEARCH AND RESCUE MISSIONS - 
+ * `Deep Reinforcement Learning` - Simple Walk simulation in python Gymnasium.
+* `Ethics` - Essay Paper: “Asimov’s Three laws of robotic”.
+ * `Internship` - Internship consisted of creating an opponent, field and Ball detection system for soccer-playing humanoid robots (NAO) (RoboCup).
+ * `Master Thesis` - "THE POWER OF MULTI-AGENT SYSTEMS IN SEARCH AND RESCUE MISSIONS - 
  A study on search behaviour and strategy development in multi-agent systems situated in an adversarial environment".
 The folder houses the thesis and data evaluation code. The implementation code can be found here: https://github.com/Kansolian/The-power-of-Multi-agent-systems-in-Search-and-Rescue-Missions.git.
-All code was written by me and all code taken from other authors is clearly stated.
+* `Research skills` - This folder houses the Image Analyses and spatio temporal assignments.
 
 
 ## Additional Information
-This is not a full list of courses taken, only courses with interesting or open explorable projects.
+This is not a full list of courses taken, only courses with interesting or open explorable projects. All code was written by me and all code taken from other authors is clearly stated.
+
 
 For further interest in any of the stated topics, projects or need for additional information, please reach out at the e-mail: friezas16@gmail.com. 
 I am happy to help out.
