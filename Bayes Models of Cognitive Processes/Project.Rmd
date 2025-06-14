@@ -1,0 +1,637 @@
+---
+title: "Group Project on Cognitive Dissonance"
+author: "Sam (Doga) Aras, Christophe Friezas, Quint Smits, Mario Vella"
+date: "03/12/2024"
+output:
+  html_document:
+    df_print: paged
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+```
+
+
+# The Effects of Self-Esteem on Drug Relapse
+
+## Overview
+
+0. Libraries
+1. Introduction
+2. The multinomial processing tree
+3. The stan model
+4. Data synthetization and parameter recovery
+5. Real data fit and conclusion
+6. Teamwork
+7. References
+
+
+
+
+## 0. Libraries
+```{r load, message = FALSE}
+library(dplyr)
+library(rstan)
+library(bcogsci)
+library(extraDistr)
+library(ggplot2)
+## Parallelize the chains using all the cores:
+options(mc.cores = parallel::detectCores())
+## other packages here
+library(bayesplot)
+library(knitr)
+library(posterior)
+```
+
+<style>
+
+    table {
+      border-collapse: collapse;
+      border: 2px solid;
+      letter-spacing: 1px;
+    }
+
+    td, th {
+      border: 1px solid rgb(190,190,190);
+      padding: 10px 20px;
+    }
+
+    td {
+      text-align: center;
+    }
+
+    caption {
+      padding: 10px;
+    }
+    </style>
+
+
+## 1. Introduction
+
+### 1.1 Scientific Background
+Cognitive dissonance is a psychological state that arises when a conflict between an individual's beliefs and actions leads to psychological discomfort. Individuals seek to reduce this discomfort by changing their attitudes, beliefs and behaviors or justifying the dissonance through rationalization (Cooper & Fazio, 1984). Cognitive dissonance is common in addiction, as individuals are aware of the harmful consequences of their actions yet persist in engaging in them. This causes an internal struggle as individuals work to justify their actions. They often do this by downplaying the risks or reinterpreting the significance of their behavior to ease the dissonance (Rosenfeld et al., 1984). 
+
+The Self-Standards Model (SSM) explains that individuals with high self-esteem may be particularly affected by the discomfort of cognitive dissonance. Their tendency to hold themselves to higher personal standards increases their motivation to justify or rationalize their behavior when dissonance arises (Stone & Cooper, 2003). This justification can involve minimizing the perceived risks of addiction, referencing the behavior of peers, or adjusting self-perceptions to better align with the addictive behavior, thereby reducing the psychological discomfort associated with dissonance.
+
+Social context plays a crucial role in cognitive dissonance and its resolution. Rosenfeld et al. (1984) highlight that impression management—the desire to appear consistent to others—can influence how dissonance is experienced, depending on the surrounding environment. In the context of addiction, individuals may construct narratives to rationalize their behavior, framing it as justifiable or logical. This internal conflict, between acknowledging the harm caused and continuing the addictive behavior, helps explain why individuals with addiction often resist change even when presented with clear evidence of its consequences. To reduce dissonance, they may adopt strategies such as focusing selectively on information that supports their actions or exaggerating the difficulties associated with making a change.
+
+Addressing addiction requires interventions that tackle both the internal and external aspects of cognitive dissonance. Implementing strategies that challenge the rationalizations individuals use to justify their behavior is crucial. These efforts should be combined with creating a supportive environment that reduces the pressure for impression management while addressing underlying dependencies. This approach can help individuals confront their dissonance more effectively and move toward meaningful change.
+
+Our research aims to address the question: What is the impact of self-esteem on inducing a cognitive dissonance effect for rationalizing a positive emotional response to drug relapse? In this study, we focus on understanding how self-esteem contributes to cognitive dissonance and the rationalization of addictive behaviors.
+
+### 1.2 Data
+The dependent variable in our research is the emotional response in the case of drug relapse as well as abstaining, while the primary predictor is self-esteem. Additionally, we include a range of other predictors, based on their significant correlations reported in the literature, to explore their influence on the process  (Safari Hajat Aghaii et al., 2012). These predictors include Personal Characteristics (PC), Behaviors (Be), Feelings and Emotions (FE), Marital Satisfaction (MS), Impulse Control (IC), Economic Factors (EcoF), Legal Factors (LeFa), Family Factors (FF), Thoughts and Beliefs (TB), Subcultural Approval (SA), and Cultural-Educational Factors (CEF). By analyzing these relationships, our goal is to understand how self-esteem contributes to cognitive dissonance and its resolution, specifically in the context of addiction.
+
+
+## 2. Mulinomial Processing Tree (MPT)
+
+### 2.1 Depiction
+![Graph depicting the MPT](graph.png)
+
+### 2.2 The MPT Parameters
+<table>
+<tr>
+<th>Predictors</th>
+<th>Shortend Name</th>
+<th>Scale</th>
+<th>Psychological Interpretation</th>
+<th>Prior</th>
+</tr>
+
+<tr>
+<td>Personal Characteristics</td>
+<td>PC</td>
+<td>0 - 10</td>
+<td>Attributes like personality traits and individual resilience influencing susceptibility to addiction</td>
+<td>Normal(5,1)</td>
+</tr>
+
+<tr>
+<td>Behaviors</td>
+<td>Be</td>
+<td>0 - 85</td>
+<td>Patterns of action, including risk-taking or habitual behaviors, that contribute to addition tendencies</td>
+<td>Normal(43,14)</td>
+</tr>
+
+<tr>
+</tr>
+
+<tr>
+<td>Feelings and Emotions</td>
+<td>FE</td>
+<td>0 - 66</td>
+<td>Emotional regulation and intensity, including negative emotions, that may increase vulnerability to addiction.</td>
+<td>Normal(33,11)</td>
+</tr>
+
+<tr>
+<td>Marital Satisfaction</td>
+<td>MS</td>
+<td>0 - 100</td>
+<td>Quality of marital relationships, with lower satisfaction linked to higher stress and potential addiction risk.</td>
+<td>Normal(50,18)</td>
+</tr>
+
+<tr>
+<td>Impulse Control</td>
+<td>IC</td>
+<td>0 - 88</td>
+<td>The ability to regulate immediate desires or impulses, with lower control associated with higher addictive tendencies.</td>
+<td>Normal(44,12)</td>
+</tr>
+
+<tr>
+<td>Economic Factors</td>
+<td>EcoF</td>
+<td>0 - 4</td>
+<td>Financial instability or poverty that can exacerbate stress and increase addiction likelihood.</td>
+<td>Normal(2,0.5)</td>
+</tr>
+
+<tr>
+<td>Legal Factors</td>
+<td>LeFa</td>
+<td>0 - 30</td>
+<td>Perceived or actual consequences of legal issues, influencing behavior and addiction patterns.</td>
+<td>Normal(15,5)</td>
+</tr>
+
+<tr>
+<td>Family Factors</td>
+<td>FF</td>
+<td>0 - 54</td>
+<td>Family dynamics, including parental supervision and familial addiction history, affecting addiction tendencies.</td>
+<td>Normal(27,9)</td>
+</tr>
+
+<tr>
+<td>Thoughts and Beliefs</td>
+<td>TB</td>
+<td>0 - 84</td>
+<td>Cognitive patterns, such as belief in control or attitudes toward addiction, shaping vulnerability.</td>
+<td>Normal(42,16)</td>
+</tr>
+
+<tr>
+<td>Subcultural Approval</td>
+<td>SA</td>
+<td>1 - 5</td>
+<td>Acceptance of addiction-related behaviors within certain social or cultural groups, normalizing use.</td>
+<td>Normal(2.5,1)</td>
+</tr>
+
+<tr>
+<td>Cultural-educational Factor</td>
+<td>CEF</td>
+<td>0 - 3</td>
+<td>Broader societal influences, including education and cultural norms, that impact addiction risks.</td>
+<td>Normal(1.5,0.5)</td>
+</tr>
+
+<tr>
+<td>Self-Esteem</td>
+<td>SE</td>
+<td>0 - 30</td>
+<td>An individual’s self-worth and confidence, with low self-esteem often linked to addiction as a coping mechanism.</td>
+<td>Normal(15,5)</td>
+</tr>
+</table>
+
+**Table Sources:** 1: (Lockwood et al., 2002) 2: (Craig et al., 1984) 3: (Angold et al., 1995)  4:  (Fowers & Olson, 1993) 5:  (Morean et al., 2014) 6: (Compton et al., 2007) 7: (Kravitz et al., 1993) 8:  (Niu et al., 2023)  9: (Turner et al., 2003) 10: (Bierbrauer et al., 2002) 11: (Compton et al., 2007) 12: (Heidari & Ghodusi, 2016) 
+
+
+### 2.3 Likelihood and linear Regression parameters
+Self-esteem being the main predictor in our study and us wanting to find if said predictor has specific effect on our results. We thus implement a logisitc regression on said factor. The following section displays the interplay between all parameters and the final likelihood:
+
+alpha ~ Normal(0, 1)
+
+beta  ~ Normal(0, 1)
+
+pred = alpha + SE*beta
+
+The base behevaior of the User is set with personality characteristics and Behavior
+
+base = PC + Be
+
+The internal Factors consist of Feelings, Marital Satisfaction, Impulse Control and Base Behavior
+
+inter = FE + MS + IC + base
+
+The external Factors consist of Ecological and Legal Factors
+
+ext = EcoF + LeFa
+
+This creates the final probabilities, abstaining being an interplay of internal and external factors. Thoughts and Beliefs in conjunction with Family Factors and our target predictor create the dissonance probability. Finally The rationalization is compiled by the Subcultural Approva, Cultural-educational Factor and the target predictor.
+
+ab  = inv_logit(inter $\cdot$ ext)
+
+noD = inv_logit(TB + FF + pred)
+
+ra  = inv_logit(SA + CEF + pred)
+
+
+The tree gives us the following thetas:
+
+theta_NR_C = ab
+
+theta_R_C  = (1-ab) $\cdot$ (1-noD) $\cdot$ ra
+
+theta_R_DC = (1-ab) $\cdot$ noD + (1-ab) $\cdot$ (1-noD) $\cdot$ (1-ra)
+
+To get the final results we use a categorical distribution for our likelihood
+
+ans ~ categorical((theta_NR_C,theta_R_C,theta_R_DC))
+
+
+
+## 3 Stan model
+```{r}
+model <-
+  "data {
+  int<lower = 1> N_obs;
+  array[N_obs] int<lower = 1, upper = 3> ans;
+  array[N_obs] real self_esteem;
+}
+parameters {
+  real PC;
+  real Be;
+  real FE;
+  real MS;
+  real IC;
+  real EcoF;
+  real LeFa;
+  real TB;
+  real FF;
+  real SA;
+  real CEF;
+  
+  
+  real alpha_SE;
+  real beta_SE;
+}
+transformed parameters {
+  array[N_obs] simplex[3] theta;
+  
+  
+  for (n in 1:N_obs){
+    real pred = alpha_SE + self_esteem[n]*beta_SE;
+    real base = (PC)+ (Be);
+    real inter = (FE)+ (MS)+ (IC)+ base;
+    real ext = (EcoF) + (LeFa);
+    
+    real ab = inv_logit(inter*ext);
+    real noD = inv_logit((TB)+ (FF) + pred);
+    real ra = inv_logit((SA) + (CEF) + pred);
+    
+    //Pr_NR_C
+    theta[n, 1] = ab;
+    //Pr_R_C
+    theta[n, 2] = (1-ab)*(1-noD)*ra;
+    //Pr_R_DC
+    theta[n, 3] = (1-ab)*noD + (1-ab)*(1-noD)*(1-ra);
+    
+  }
+}
+model {
+  target += normal_lpdf(PC | 5, 1);
+  target += normal_lpdf(Be | 43, 14);
+  target += normal_lpdf(FE | 33, 11);
+  target += normal_lpdf(MS | 50, 18);
+  target += normal_lpdf(IC | 44, 12);
+  target += normal_lpdf(EcoF | 2, 0.5);
+  target += normal_lpdf(LeFa | 15, 5);
+  target += normal_lpdf(TB | 42, 16);
+  target += normal_lpdf(FF | 27, 9);
+  target += normal_lpdf(SA | 2.5, 1);
+  target += normal_lpdf(CEF | 1.5, 0.5);
+  
+  target += normal_lpdf(alpha_SE | 0, 1);
+  target += normal_lpdf(beta_SE | 0, 1);
+  
+  for(n in 1:N_obs)
+    target +=  categorical_lpmf(ans[n] | theta[n]);
+}
+generated quantities{
+  array[N_obs] int<lower = 1, upper = 3> pred_ans;
+  for(n in 1:N_obs)
+    pred_ans[n] = categorical_rng(theta[n]);
+}"
+```
+
+## 4. Synthetic Data and parameter Recovery
+### 4.1 Generate Data
+```{r}
+# Our probability functions
+Pr_NR_C <- function(ab, noD, ra)
+   ab
+Pr_R_C <- function(ab, noD, ra)
+  (1-ab)*(1-noD)*ra
+Pr_R_DC <- function(ab,noD,ra)
+  (1-ab)*noD + (1-ab)*(1-noD)*(1-ra)
+
+# Number of observations (bit limited given computational power)
+N_obs <- 100
+
+# Parameter initalisation based on the priors chosen for the model
+SE <- rnorm(N_obs, 15, 5)
+
+# Lower SE should impact the drug tendency
+beta <- - 0.3
+alpha <- 0.5
+pred <- alpha + SE * beta
+
+PC <- rnorm(N_obs, 5, 1)
+Be <- rnorm(N_obs, 43, 14)
+
+FE <- rnorm(N_obs, 33, 11)
+MS <- rnorm(N_obs, 50, 18)
+IC <- rnorm(N_obs,44, 12)
+
+EcoF <- rnorm(N_obs, 2,0.5)
+LeFa <- rnorm(N_obs, 15, 5)
+
+TB <- rnorm(N_obs, 42, 16)
+FF <- rnorm(N_obs, 27, 9)
+SA <- rnorm(N_obs, 2.5,1)
+CEF <- rnorm(N_obs, 1.5,0.5)
+
+
+base <- (PC)+ (Be)
+inter <- (FE)+ (MS)+ (IC)+ base
+ext <- (EcoF) + (LeFa)
+
+ab <- plogis(inter*ext)
+noD <- plogis((TB)+ (FF)+ pred)
+ra <- plogis((SA) + (CEF) + pred)
+
+
+theta_NR_C <- rep(Pr_NR_C(ab, noD, ra),N_obs)
+theta_R_C <- Pr_R_C(ab, noD, ra)
+theta_R_DC <- Pr_R_DC(ab, noD, ra)
+theta_sub <- matrix(c(theta_NR_C,
+                       theta_R_C,
+                       theta_R_DC),
+                     ncol = 3)
+
+sim_data_cx <- tibble(self_esteem = SE,
+                      ans = c(rcat(N_obs,theta_sub)))
+
+sim_list_h <-  list(N_obs = nrow(sim_data_cx),
+                    ans = sim_data_cx$ans,
+                    self_esteem = sim_data_cx$self_esteem)
+
+fit <- stan(model_code = model, data = sim_list_h)
+
+
+```
+
+### 4.2 Fit on synthetic data
+```{r}
+print(fit,
+      pars = c("alpha_SE", "beta_SE","PC", "Be", "FE", "MS", "IC", "EcoF", "LeFa", "TB", "FF", "SA", "CEF"))
+```
+
+
+The model achieved convergence across most of its parameters, with Rhat values consistently near 1, expect for 4 cases being higher than 1.5, indicating that the chains mixed sufficiently and that the parameter estimates are robust. Notably, predictors such as Societal Approval (SA) and Cultural-educational Factor (CEF) exhibited significant posterior means, suggesting their importance in explaining the dependent variable. Parameters like Self-Esteem (alpha_SE and beta_SE) displayed the expected behavior, thus a negative effect on the overall outcome, a big self-esteem means a higher risk of relapse with Discomfort.
+
+
+```{r}
+traceplot(fit, pars =c("alpha_SE", "beta_SE","PC", "Be", "FE", "MS", "IC", "EcoF", "LeFa", "TB", "FF", "SA", "CEF"))
+```
+
+The traceplot show a convergence on most of the Factors, yet factors like LeFa does not converge at all as well as some deviations for BE, FE, MS and IC. This might be an effect of not enough observations or the way the model has been setup. All in all, the model does perform adequately.
+
+### 4.3 Parameter recovery check
+
+```{r}
+as.data.frame(fit) %>%
+  select(alpha_SE, beta_SE, PC, Be, FE, MS, IC, EcoF, LeFa, TB, FF, SA, CEF) %>%
+  mcmc_recover_hist(true = c(alpha, beta, mean(PC), mean(Be), mean(FE), mean(MS), mean(IC), mean(EcoF), mean(LeFa), mean(TB), mean(FF), mean(SA), mean(CEF)))
+
+gen_data <- rstan::extract(fit)$pred_ans
+ppc_bars(sim_list_h$ans, gen_data) +
+  ggtitle ("Posterior predictive check")
+
+```
+
+As with the traceplots, the model seems to be able to recover most of the parameters, as seen in the recovery plots. Thus working as expected, yet given the amounts of parameters there was a realistic notion of the model not performing perfectly as both the trace as well as recovery plots show. The posterior predictive check reinforcing this notion of adequacy.
+
+
+
+## 5. Real Data
+### 5.1 Fit model
+For the real data we sticked closely to the original correlation paper to synthesize our real data, given it was none existant otherwise.
+
+```{r}
+target_correlations <- list(
+  PC = 0.98, Behaviors = 0.88,
+  FE = 0.92, MS = -0.55, IC = -0.52,
+  EF = 0.72, LF = 0.63,
+  TB = 0.96,  FF = 0.82, SE = 0.31,
+  SA = 0.57, CEF = 0.51
+)
+
+# Function to simulate one iteration and calculate sigma probabilities
+simulate_sigma <- function(target_correlations) {
+  # Random inputs for factors (normalized to be between -1 and 1) we could link some of these like PC and Behaviors
+  #and we could also change the random number it generates to reflect the scales found in the papers, then divide them by the max of that scale
+  PC <- runif(1, -1, 1) * target_correlations$PC
+  Behaviors <- runif(1, -1, 1) * target_correlations$Behaviors
+  FE <- runif(1, -1, 1) * target_correlations$FE
+  MS <- runif(1, -1, 1) * target_correlations$MS
+  IC <- runif(1, -1, 1) * target_correlations$IC
+  EF <- runif(1, -1, 1) * target_correlations$EF
+  LF <- runif(1, -1, 1) * target_correlations$LF
+  TB <- runif(1, -1, 1) * target_correlations$TB
+  FF <- runif(1, -1, 1) * target_correlations$FF
+  SE <- runif(1, -1, 1) * target_correlations$SE
+  SA <- runif(1, -1, 1) * target_correlations$SA
+  CEF <- runif(1, -1, 1) * target_correlations$CEF
+  
+  # Calculate Sigma_internal
+  Sigma_internal <- PC + Behaviors + FE + MS + IC
+  
+  # Calculate Sigma_external
+  Sigma_external <- EF + LF
+  
+  # Calculate Sigma_abstain
+  Sigma_abstain <- 0.32 + Sigma_internal - Sigma_external
+  
+  # Calculate Sigma_use (1 - abstain)
+  Sigma_use <- 1 - Sigma_abstain
+  
+  # Determine if the person used
+  used <- Sigma_use > Sigma_abstain
+  
+  # Default values for dissonance and rationalization (irrelevant if abstain)
+  dissonance <- FALSE
+  rationalized <- FALSE
+  
+  # Calculate Sigma_use_dissonance only if the person used, we can add a value to this to make it real world reflective if we find that data
+  if (used) {
+    Sigma_use_dissonance <- TB + FF + SE + 0.2
+    Sigma_dissonance_rationalize <- SA + CEF + SE
+    
+    # Determine dissonance and rationalization outcomes
+    dissonance <- Sigma_use_dissonance > Sigma_dissonance_rationalize
+    if(runif(1) > 0.5){
+      rationalized <- TRUE
+    }else{
+      rationalized <- FALSE
+    }
+    
+    
+  }
+  
+  
+  res <- 0
+  if(used  &  dissonance & rationalized){
+    res <- 2
+  }else if(used & dissonance & !rationalized){
+    res <- 3
+  }else if(used & !dissonance){
+    res <- 3
+  }else{
+    res <- 1
+  }
+  
+  SE <-15 - 15*SE
+    PC <- 5 - 5*PC
+    Be <- 42 - 42*Behaviors
+    FE <- 33 - 33*FE
+    MS <- 50 - 50*MS
+    IC <- 44 - 44*IC
+    EcoF <- 2 - 2*EF
+    LF <- 15 - 15*LF
+    FF <- 27 - 27*FF
+    TB <- 42 - 42*TB
+    SA <- 2.5 - 2.5*SA
+    CEF <- 1.5 - 1.5*CEF
+  
+  
+  
+  # Return results
+  return(list(
+    SE = SE,
+    PC = PC,
+    Be = Be,
+    FE = FE,
+    MS = MS,
+    IC = IC,
+    EcoF = EcoF,
+    LF = LF,
+    FF = FF,
+    TB = TB,
+    SA = SA,
+    CEF = CEF,
+    used = used,
+    dissonance = dissonance,
+    rationalized = rationalized,
+    result = res
+  ))
+}
+
+
+# Run the simulation for 1000 iterations
+set.seed(123)
+n_iterations <- 100
+N_obs <- n_iterations
+results <- replicate(n_iterations, simulate_sigma(target_correlations), simplify = FALSE)
+
+# Convert to data frame and retain only SE, used, dissonance, rationalized, otherwise we'd have all of the factors in the DF
+results_df <- do.call(rbind, lapply(results, as.data.frame))
+
+# Calculate overall statistics
+percent_abstain <- mean(!results_df$used) * 100
+percent_use <- mean(results_df$used) * 100
+percent_dissonance <- mean(results_df$dissonance & results_df$used) * 100
+percent_rationalization <- mean(results_df$rationalized & results_df$used) * 100
+
+# Print summary
+cat("Percentage Abstain:", round(percent_abstain, 2), "%\n")
+cat("Percentage Use:", round(percent_use, 2), "%\n")
+cat("Percentage of Use with Dissonance:", round(percent_dissonance, 2), "%\n")
+cat("Percentage of Use with Rationalization:", round(percent_rationalization, 2), "%\n")
+
+real_data <-  list(N_obs = nrow(results_df),
+                    ans = results_df$result,
+                    self_esteem = results_df$SE)
+
+fit_real <- stan(model_code = model, data = real_data)
+
+print(fit_real,
+      pars = c("alpha_SE", "beta_SE","PC", "Be", "FE", "MS", "IC", "EcoF", "LeFa", "TB", "FF", "SA", "CEF"))
+
+```
+
+Given the fit of the model, it performed nearly identical to our synthetic data.
+
+### 5.2 Posterior predictive Check
+```{r}
+as.data.frame(fit_real) %>%
+  select(PC, Be, FE, MS, IC, EcoF, LeFa, TB, FF, SA, CEF) %>%
+  mcmc_recover_hist(true = c(mean(results_df$PC), mean(results_df$Be), mean(results_df$FE), mean(results_df$MS), mean(results_df$IC), mean(results_df$EcoF), mean(results_df$LF), mean(results_df$TB), mean(results_df$FF), mean(results_df$SA), mean(results_df$CEF)))
+
+gen_data <- rstan::extract(fit_real)$pred_ans
+ppc_bars(real_data$ans, gen_data) +
+  ggtitle ("Posterior Predictive Check on the real Data")
+
+```
+
+
+The posterior predictive check (PPC) further affirms the reliability of the model. The comparison between real data (y) and replicated data generated by the model (y_rep) reveals a close alignment, with overlapping credible intervals that confirm the model’s ability to accurately capture the variability in the data. 
+
+### 5.3 Conclusion
+As seen in the recovery plot of the real data, the model fails to truly capture some parameters, yet perfectly captures the overall mean for the posterior predictive check. Taking the duality in account the model seems adequate.
+
+
+Examining the posterior distributions, predictors such as Thoughts and Beliefs (TB) and Cultural-educational Factor (CEF) emerge as key contributors, with higher posterior means indicating their significance. Predictors like Personal Characteristic (PC) and Economic Factors (EcoF) exhibit moderate effects, suggesting their relevance in the model but with a broader range of uncertainty. Self-Esteem parameters (alpha_SE and beta_SE) continue to exhibit wide credible intervals, reinforcing the idea that their role may be indirect and dependent on interactions with other predictors.
+
+The research question-What is the impact of self-esteem on creating cognitive dissonance and rationalizing a positive emotional response to drug relapse?—is partially answered by these results. While self-esteem alone does not appear to be a dominant predictor, its interaction with other variables, such as Thoughts and Beliefs (TB) and Economic Factors (EcoF), likely plays a crucial role in shaping cognitive dissonance and rationalization. The study additionally depicts an overall negative impact of self-esteem on emotional response on drug relapse.
+
+## 6. Teamwork
+### Sam
+Conducting literature review, finding scales for model predictors, writing the report (Introduction, Conlcusion),interpretation, putting together works cited page (References). 
+
+### Christophe
+Created the tree, created stan model, Posterior checks, traceplots, model fitting, synthetic data, interpretation. 
+
+### Quint
+Topic exploration, finding probabilities/correlations, formulating research question, real data simulation/synthesization, interpretation. 
+
+### Mario
+Conducting literature review, finding scales for model predictors, writing the report(Introduction, Conclusion),interpretation, applying feedback from the draft, making sure the project fits rubric guidelines. 
+
+## 7. References
+Angold, Adrian, et al. "The Development of a Short Questionnaire for Use in Epidemiological Studies of Depression in Children and Adolescents." International Journal of Methods in Psychiatric Research, vol. 5, 1995, pp. 237–249.
+
+Bierbrauer, Gerd, et al. COS. Cultural Orientation Scale. Leibniz-Institut für Psychologie (ZPID), 2002. https://doi.org/10.23668/psycharchives.6484.
+
+Cooper, Joel, and Fazio, Russell H. "A New Look at Dissonance Theory." Advances in Experimental Social Psychology, vol. 17, 1984, pp. 229–266. https://doi.org/10.1016/s0065-2601(08)60121-5.
+
+Compton WM, Thomas YF, Stinson FS, Grant BF. Prevalence, correlates, disability, and comorbidity of DSM-IV drug abuse and dependence in the United States: results from the national epidemiologic survey on alcohol and related conditions. Arch Gen Psychiatry. 2007;64(5):566–76. doi: 10.1001/archpsyc.64.5.566.
+
+Craig, Alan R., et al. "A Scale to Measure Locus of Control of Behaviour." British Journal of Medical Psychology, vol. 57, 1984, pp. 173–180. https://doi.org/10.1111/j.2044-8341.1984.tb0159.
+
+Fowers, Blaine J., and Olson, David H. "ENRICH Marital Satisfaction Scale: A Brief Research and Clinical Tool." Journal of Family Psychology, vol. 7, no. 2, 1993, pp. 176–185. https://doi.org/10.1037/0893-3200.7.2.176.
+
+Heidari, Mohammad, and Mansureh Ghodusi. "Relationship of Assess Self-Esteem and Locus of Control with Quality of Life during Treatment Stages in Patients Referring to Drug Addiction Rehabilitation Centers." Materia Socio-Medica, vol. 28, no. 4, 2016, pp. 263–267. https://doi.org/10.5455/msm.2016.28.263-267.
+
+Kravitz, David A., et al. "Reliability and Validity of the Original and Revised Legal Attitudes Questionnaire." Law and Human Behavior, vol. 17, 1993, pp. 661–677. https://doi.org/10.1007/BF01044688.
+
+Lockwood, Penelope, et al. "Motivation by Positive or Negative Role Models: Regulatory Focus Determines Who Will Best Inspire Us." Journal of Personality and Social Psychology, vol. 83, no. 4, 2002, pp. 854–864. https://doi.org/10.1037/0022-3514.83.4.854.
+
+Morean, Meghan E., et al. "Psychometrically Improved, Abbreviated Versions of Three Classic Measures of Impulsivity and Self-Control." Psychological Assessment, vol. 26, no. 3, 2014, pp. 1003–1020. https://doi.org/10.1037/pas0000003.
+
+Niu, Xiang, et al. "The Relationship between Parenting Styles and Adolescent Problematic Internet Use: A Three-Level Meta-Analysis." Journal of Behavioral Addictions, vol. 12, no. 3, 2023, pp. 652–669. https://doi.org/10.1556/2006.2023.00043.
+
+Rosenfeld, Paul, et al. "Cognitive Dissonance and Impression Management Explanations for Effort Justification." Personality and Social Psychology Bulletin, vol. 10, no. 3, 1984, pp. 394–401. https://doi.org/10.1177/0146167284103007.
+
+Safari Hajat Aghaii, Saideh, et al. "Meta-Analysis of Individual and Environmental Factors That Influence People's Addiction Tendencies." International Journal of High Risk Behaviors & Addiction, vol. 1, no. 3, 2012, pp. 92–99. https://doi.org/10.5812/ijhrba.5330.
+
+Stone, Jeff, and Cooper, Joel. "The Effect of Self-Attribute Relevance on How Self-Esteem Moderates Attitude Change in Dissonance Processes." Journal of Experimental Social Psychology, vol. 39, no. 5, 2003, pp. 508–515. https://doi.org/10.1016/s0022-1031(03)00018-0.
+
+Turner, Samuel, et al. "The Social Thoughts and Beliefs Scale: A New Inventory for Assessing Cognitions in Social Phobia." Psychological Assessment, vol. 15, no. 3, 2003, pp. 384–391. https://doi.org/10.1037/1040-3590.15.3.384.

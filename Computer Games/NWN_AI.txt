@@ -1,0 +1,282 @@
+#include "NW_I0_GENERIC"
+#include "our_constants"
+
+#include "x0_i0_behavior"
+#include "x0_i0_anims"
+
+#include "x0_inc_generic"
+
+// Called every time that the AI needs to take a combat decision. The default is
+// a call to the NWN DetermineCombatRound.
+void Heal_Team(){
+    int i = 0;
+    object oCreature = GetNearestObjectToLocation( OBJECT_TYPE_CREATURE, GetLocation( OBJECT_SELF ), i );
+
+    int nSpell = -1;
+
+    while (GetIsObjectValid( oCreature ))
+    {
+        if (!SameTeam( oCreature ) || GetDistanceBetween( oCreature, OBJECT_SELF ) >= 8.0){
+            ++i;
+            oCreature = GetNearestObjectToLocation( OBJECT_TYPE_CREATURE, GetLocation( OBJECT_SELF ), i );
+            continue;
+        }
+
+        if(GetHealth(oCreature)<3){
+            if (GetHasSpell(SPELL_HEALING_CIRCLE)) {
+                nSpell = SPELL_HEALING_CIRCLE;
+            }else if (GetHasSpell(SPELL_CURE_CRITICAL_WOUNDS)) {
+                nSpell = SPELL_CURE_CRITICAL_WOUNDS;
+            } else if (GetHasSpell(SPELL_CURE_SERIOUS_WOUNDS)) {
+                nSpell = SPELL_CURE_SERIOUS_WOUNDS   ;
+            } else if (GetHasSpell(SPELL_CURE_MODERATE_WOUNDS)) {
+                nSpell = SPELL_CURE_MODERATE_WOUNDS;
+            }
+            break;
+
+        }
+        ++i;
+        oCreature = GetNearestObjectToLocation( OBJECT_TYPE_CREATURE, GetLocation( OBJECT_SELF ), i );
+    }
+    if(!(nSpell<0)){
+        ActionCastSpellAtObject(nSpell, oCreature);
+        return;
+    }
+}
+
+
+
+
+void T2_DetermineCombatRound( object oIntruder = OBJECT_INVALID, int nAI_Difficulty = 10 )
+{
+    object enemy_close = GetNearestEnemy();
+    if(GetIsObjectValid(enemy_close)){
+        float dist_close =  GetDistanceToObject(enemy_close);
+        SpeakString(FloatToString(dist_close));
+        if( (IsFighter()) && (dist_close > 8.0) ){
+            ActionMoveToLocation(GetLocation( GetObjectByTag( GetLocalString( OBJECT_SELF, "TARGET" ) ) ), TRUE );
+            return;
+        }
+    }
+
+    DetermineCombatRound( oIntruder, nAI_Difficulty );
+}
+
+// Called every heartbeat (i.e., every six seconds).
+void T2_HeartBeat()
+{
+
+    string sTarget = GetLocalString( OBJECT_SELF, "TARGET" );
+    object oWPLeft = GetObjectByTag(WpFurthestAltarLeft());
+
+
+
+    if(!GetIsObjectValid( oWPLeft)) {
+        SpeakString( "Not Valid WP");
+    }
+
+    if (sTarget == "")
+        return;
+
+    if(IsCleric()){
+        Heal_Team();
+    }
+
+    object oTarget = GetObjectByTag( sTarget );
+    if (!GetIsObjectValid( oTarget ))
+        return;
+
+    if(IsWizardLeft()){
+        if(ClaimerOf(WpClosestAltarLeft()) == OpponentColor()) {
+            sTarget = WpClosestAltarLeft();
+        }else{
+            if(GetDistanceBetween(oWPLeft, OBJECT_SELF) > 54.0){
+                sTarget= WpClosestAltarLeft()+"D";
+            }else{
+                sTarget= WpFurthestAltarLeft();
+            }
+        }
+
+        SetLocalString( OBJECT_SELF, "TARGET", sTarget );
+        ActionMoveToLocation( GetLocation( oTarget ), TRUE );
+        return;
+    }
+
+    if((IsMaster() || IsClericLeft())){
+
+
+        if(GetDistanceBetween(oWPLeft, OBJECT_SELF) > 54.0){
+            sTarget=WpClosestAltarLeft()+"D";
+        }else{
+            sTarget = WpFurthestAltarLeft();
+        }
+        SetLocalString( OBJECT_SELF, "TARGET", sTarget );
+        ActionMoveToLocation( GetLocation( oTarget ), TRUE );
+        return;
+    }
+
+    if (IsFighterRight()){
+        sTarget = WpClosestAltarRight();
+        SetLocalString( OBJECT_SELF, "TARGET", sTarget );
+        ActionMoveToLocation( GetLocation( oTarget ), TRUE );
+        return;
+    }
+
+    if (IsFighterLeft()){
+    sTarget = WpClosestAltarLeft();
+    SetLocalString( OBJECT_SELF, "TARGET", sTarget );
+    ActionMoveToLocation( GetLocation( oTarget ), TRUE );
+    return;
+    }
+
+    if(IsClericRight()){
+
+    object oLeftC = GetObjectByTag(TagClericLeft());
+    object oWPLeft = GetObjectByTag(WpFurthestAltarLeft());
+
+    if (!GetIsObjectValid( oWPLeft))  {
+       SpeakString( "Not Valid Spawn");
+    }else{
+    if(!GetIsObjectValid( oLeftC)) {
+        SpeakString( "Not Valid Right");
+    }}
+
+    if( GetDistanceBetween(oLeftC, oWPLeft) > 10.0 && ClaimerOf(WpClosestAltarLeft()) == MyColor()){
+        sTarget = WpFurthestAltarLeft();
+        SetLocalString( OBJECT_SELF, "TARGET", sTarget );
+        ActionMoveToLocation( GetLocation( oTarget ), TRUE );
+        return;
+    }
+
+    sTarget = WpClosestAltarLeft();
+    SetLocalString( OBJECT_SELF, "TARGET", sTarget );
+    ActionMoveToLocation( GetLocation( oTarget ), TRUE );
+    return;
+    }
+
+    if(IsWizardRight() ){
+    sTarget = WpClosestAltarRight();
+    SetLocalString( OBJECT_SELF, "TARGET", sTarget );
+    ActionMoveToLocation( GetLocation( oTarget ), TRUE );
+    return;
+    }
+
+
+    return;
+}
+
+
+void Drink_Potion(){
+    talent tUse;
+    if (GetIsInCombat() ){
+        if(GetHealth() < 2){
+            tUse = GetCreatureTalentRandom(TALENT_CATEGORY_BENEFICIAL_HEALING_POTION);
+            if(GetIsTalentValid(tUse))
+                {
+                    bkTalentFilter(tUse, OBJECT_SELF);
+                    return;
+                }
+        }
+    }
+    return;
+}
+
+
+// Called when the NPC is spawned.
+void T2_Spawn()
+{
+    int iMe =   GetLocalInt( OBJECT_SELF, "INDEX");
+    string sTarget;
+
+    switch (iMe)
+    {
+     case 1:
+     sTarget = WpClosestAltarRight();
+     break;
+
+     case 2:
+     sTarget = WpClosestAltarLeft()+"D";
+     break;
+
+     case 3:
+     sTarget = WpClosestAltarRight();
+     break;
+
+     case 4:
+     sTarget = WpClosestAltarLeft()+"D";
+     break;
+
+     case 5:
+     sTarget = WpClosestAltarLeft();
+     break;
+
+     case 6:
+     sTarget = WpClosestAltarLeft();
+     break;
+
+     case 7:
+     sTarget = WpClosestAltarLeft()+"D";
+     break;
+    }
+    SetLocalString( OBJECT_SELF, "TARGET", sTarget );
+    ActionMoveToLocation( GetLocation( GetObjectByTag( sTarget ) ), TRUE );
+}
+
+// This function is called when certain events take place, after the standard
+// NWN handling of these events has been performed.
+void T2_UserDefined( int Event )
+{
+    switch (Event)
+    {
+        // The NPC has just been attacked.
+        case EVENT_ATTACKED:
+            break;
+
+        // The NPC was damaged.
+        case EVENT_DAMAGED:
+            Drink_Potion();
+            break;
+
+        // At the end of one round of combat.
+        case EVENT_END_COMBAT_ROUND:
+            if(IsCleric()){
+                Heal_Team();
+            }
+            break;
+
+        // Every heartbeat (i.e., every six seconds).
+        case EVENT_HEARTBEAT:
+            T2_HeartBeat();
+            DelayCommand(3.0,T2_HeartBeat());
+            break;
+
+        // Whenever the NPC perceives a new creature.
+        case EVENT_PERCEIVE:
+            break;
+
+        // When a spell is cast at the NPC.
+        case EVENT_SPELL_CAST_AT:
+            break;
+
+        // Whenever the NPC's inventory is disturbed.
+        case EVENT_DISTURBED:
+            break;
+
+        // Whenever the NPC dies.
+        case EVENT_DEATH:
+            break;
+
+        // When the NPC has just been spawned.
+        case EVENT_SPAWN:
+            T2_Spawn();
+            break;
+    }
+
+    return;
+}
+
+// Called when the fight starts, just before the initial spawning.
+void T2_Initialize( string sColor )
+{
+    SetTeamName( sColor, "NSP-" + GetStringLowerCase( sColor ) );
+}
