@@ -7,26 +7,33 @@ A Repository housing all code relating to various University projects. In additi
 * `Autonomous Systems` - Code was lost given a faulty laptop, still mentioned given its impact on my knowledge base. The project resulted in building a laser Tag companion robot named ALTO, image can be seen in the folder. Build while using two arduino boards in conjunction.
 
 * `Cognitive Neuroscience` - Group based analyses of brainwaves. No code given assignment based nature, thus no open exploration of the task.
-* `Research Workshop` - Project paper: "A deeper deeper look into online reviews of mental disorders and their impact on Natural Language Processing"
+* `Research Workshop` - Project paper: "A deeper deeper look into online reviews of mental disorders and their impact on Natural Language Processing".
 * `Software Engineering` - A bird detection app based on sound and images for android. The folder shows the parts I contributed. The app did not fully work in the end, given inexperienced group members in programming.
-* `Foundation of Databases` - This project consists of the creation of a database. The topic chosen was Formula 1
-* `Computational Linguistics` - Assignment testing semester acquired knowledge
-* `Knowledge Representation` - Project for inference logic, programmed in Prologue
-* `Bachelor Thesis` - “A Deep Learning Approach On Fusion Technique Comparison Applied To Affordance Classification”
+* `Foundation of Databases` - This project consists of the creation of a database. The topic chosen was Formula 1.
+* `Computational Linguistics` - Assignment testing semester acquired knowledge.
+* `Knowledge Representation` - Project for inference logic, programmed in Prologue.
+* `Bachelor Thesis` - “A Deep Learning Approach On Fusion Technique Comparison Applied To Affordance Classification”.
 
 ## Master Years
-The code is based on a combined implementation of gazebo and ROS2, thus to run each experiment this environemt has to be guaranteed.
+* `Cognitive Models of Language Learning` - Project Paper: "Unraveling a Linguistic Enigma: Computational Approach to Understanding Specific Language Impairment in Children”
+* `COmputer Games` - The project consisted of creating 3 game AI’s, “No Thanks” (card game), “Take5” (card game), “Neverwinter Nights” (Team based capture the flag).
+* `Core Topics Cognitive Science` - Project Paper: “Imitative behaviour of the Mirror Neuron System on Attention. The impact of the Genschow et al. (2017) paper on the taxonomy of Attention”.
+* `Core Topics AI` - Project Paper: “The Social Robot: Is the safe way, the right way?”.
+* `Ethics` - Essay Paper: “Asimov’s Three laws of robotic”.
+* `Brain Computer Interfacing` -  Project Paper: "A Multimodal Analyses of a passive Brain Computer Interface for Workload Detection”.
+* `Complex Systems` - Project Paper: ”Forecasting Food Price Indices in the United States: Using Time-Series Forecasting Models Based On Complex System Paradigms”.
+* `Deep Reinforcement Learning` - Simple Walk simulation in python Gymnasium.
+* `Bayesian Modelling of Cognitive Processes` - Project based on a Multinomial simulation approach on the effect of Cognitive Dissonance. Title: “The Effects of Self-Esteem on Drug Relapse”.
+* `Deep Learning` - Project Paper: “FRAM: Facial Recognition Applied to Mouth Movement. A Feature Analysis On A Lip Reading Paradigm”.
+* `Internship` - Internship consisted of creating an opponent, field and Ball detection system for soccer-playing humanoid robots (NAO) (RoboCup).
+* `Master Thesis` - "THE POWER OF MULTI-AGENT SYSTEMS IN SEARCH AND RESCUE MISSIONS - 
+ A study on search behaviour and strategy development in multi-agent systems situated in an adversarial environment".
+The folder houses the thesis and data evaluation code. The implementation code can be found here: https://github.com/Kansolian/The-power-of-Multi-agent-systems-in-Search-and-Rescue-Missions.git.
+All code was written by me and all code taken from other authors is clearly stated.
 
-To run the code these packages need to be installed additionally to ROS2 Jazzy:
-* `Open-Cv`
 
-The Crazyflie wall following tutorial has been used as a basis for these implementations.
-The tutorial can be found under https://www.bitcraze.io/2024/09/crazyflies-adventures-with-ros-2-and-gazebo/.
+## Additional Information
+This is not a full list of courses taken, only courses with interesting or open explorable projects.
 
-
-Once the code has been downloaded, situate yourself in the given experiment folder you want to run.
-* First source your ros2 codebase `source /opt/ros/{your-ros2-DIST}/setup.bash`
-* Next you need to build the codebase `colcon build`
-* Source your setup file `source install/local_setup.bash`
-* Execute the simulated environment `ros2 launch LaunchSup.py`
-
+For further interest in any of the stated topics, projects or need for additional information, please reach out at the e-mail: friezas16@gmail.com. 
+I am happy to help out.
